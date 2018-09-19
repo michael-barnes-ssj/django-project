@@ -1,0 +1,132 @@
+> from .models import QuizCategory, Quiz, Question, Answer
+> from django.views import generic
+> from django.views.generic import View
+> from django.shortcuts import render, HttpResponseRedirect, reverse
+> from .score import GetScore
+> from .quiz import QuizData, GetQuizzes
+> from .play_quiz import PlayQuiz
+> from django.contrib.auth.mixins import LoginRequiredMixin
+> from django.contrib.auth.mixins import UserPassesTestMixin
+> from django.contrib.auth.models import User
+> import random
+  
+  
+> class LoginMixin(LoginRequiredMixin):
+>     redirect_field_name = 'home'
+  
+  
+> class QuizListView(LoginMixin, generic.ListView):
+  
+>     context_object_name = 'quizzes'
+>     template_name = "quiz/quiz_list.html"
+  
+>     def get_queryset(self):
+>         return GetQuizzes().get_unentered(self.request.user)
+  
+  
+> class CreateQuiz(UserPassesTestMixin, generic.ListView):
+  
+>     def test_func(self):
+>         return self.request.user.is_staff
+  
+>     model = QuizCategory
+>     template_name = "quiz/create.html"
+>     context_object_name = 'categories'
+>     login_url = 'home'
+>     redirect_field_name = ""
+  
+  
+> class Created(LoginMixin, View):
+  
+>     def post(self, request):
+>         QuizData().create_quiz(request)
+>         quizzes = GetQuizzes().get_unentered(request.user)
+  
+>         return render(request, 'quiz/created.html', {'tourny_name': request.POST['tname'], 'quizzes': quizzes})
+  
+  
+> class HighScores(LoginMixin, generic.ListView):
+  
+>     template_name = "quiz/highscores.html"
+>     context_object_name = "highscores"
+  
+>     def get_queryset(self):
+>         return GetScore(User.objects.all(), Quiz.objects.all()).get_scores()
+  
+  
+> class Play(LoginMixin, View):
+  
+>     def get(self, request, **kwargs):
+>         quiz = Quiz.objects.get(pk=kwargs["pk"])
+>         questions = Question.objects.filter(quiz=quiz)
+>         question, last_question = PlayQuiz.get_questions(request, quiz, questions)
+>         answers = list(Answer.objects.filter(question=question))
+>         random.shuffle(answers) # Make sure correct answer is in different spot each question
+>         question_count = PlayQuiz.get_question_count(quiz, request)
+>         response = PlayQuiz.get_response(last_question, request.user)
+>         template, context = PlayQuiz.check_if_last_question(question_count, request, quiz, response, question, answers, len(questions))
+>         return render(request, template, context)
+  
+>     def post(self, request, **kwargs):
+>         PlayQuiz.update_score(request)
+>         return HttpResponseRedirect(reverse('play', kwargs={'pk': kwargs["pk"]}))
+  
+  
+  # @login_required(redirect_field_name='home')
+  # def play(request, pk):
+  #
+  #     question_id = request.POST.get('last_question')
+  #     answer = request.POST.get('answer')
+  #     response = None
+  #
+  #     if answer:
+  #         last_question = Question.objects.get(id=question_id)
+  #         score = Score.objects.get(question=last_question)
+  #         if score.answered is False:
+  #             if answer == last_question.correct_answer:
+  #                 response = "Correct!"
+  #                 score.correct = 1
+  #                 score.answered = True
+  #                 score.save()
+  #             else:
+  #                 response = "Incorrect, the correct answer was "+ last_question.correct_answer+"."
+  #                 score.answered = True
+  #                 score.save()
+  #         else:
+  #             response = "Don't try cheat"
+  #
+  #     quiz = Quiz.objects.get(pk=pk)
+  #
+  #     questions = Question.objects.filter(quiz=quiz)
+  #
+  #     scores = Score.objects.filter(quiz=quiz)
+  #     score_count = 0
+  #     for s in scores:
+  #         if s.answered is True:
+  #             score_count += 1
+  #
+  #     print("testing")
+  #
+  #     if score_count == 10:
+  #         score = GetScore([request.user], [quiz]).get_scores()
+  #         return render(request, 'quiz/final_score.html', {"score": score, "response": response})
+  #
+  #     for q in questions:
+  #         question = q
+  #         s, c = Score.objects.get_or_create(user=request.user, quiz=quiz, question=question)
+  #         if c or s.answered is False:
+  #             break
+  #
+  #     answers = list(Answer.objects.filter(question=question))
+  #     random.shuffle(answers)
+  #
+  #     return render(request, 'quiz/quiz_detail.html', {"quiz": quiz,
+  #                                                      "question": question,
+  #                                                      "answers": answers,
+  #                                                      "response": response,
+  #                                                      "number": (score_count + 1)})
+  
+  
+  
+  
+  

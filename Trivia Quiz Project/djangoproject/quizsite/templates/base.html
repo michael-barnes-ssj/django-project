@@ -1,0 +1,89 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}Django Auth Tutorial{% endblock %}</title>
+</head>
+<body>
+<main>
+
+    {% block nav %}
+    {% if user.is_authenticated %}
+    <ul>
+        <li><a href="{% url 'logout' %}">logout</a></li>
+        <li><a href="{% url 'home' %}">Home</a></li>
+        <li><a href="{% url 'highscores' %}">High scores</a></li>
+        {%if user.is_superuser %}
+        <li><a href="{% url 'create' %}">Create tournament</a></li>
+
+        <li>Admin user: {{ user.username }}</li>
+        {% else %}
+        <li>User: {{ user.username }}</li>
+        {% endif %}
+
+        {% else %}
+        <li><a href="{% url 'login' %}">login</a></li>
+        <li><a href="{% url 'signup' %}">sign up</a></li>
+        {% endif %}
+    </ul>
+    {% endblock %}
+
+
+    {% block content %}
+    {% endblock %}
+
+    {% block display_score %}
+    {% endblock %}
+
+    {% block display_high_scores %}
+    {% endblock %}
+
+    {% block display_quizzes %}
+        {% if user.is_authenticated %}
+            {% if quizzes %}
+                <h3>Incomplete</h3>
+                {% for q in quizzes.incomplete %}
+                    <div>
+                        {{q.name}}
+                        {{q.category}}
+                        {{q.start_date}}
+                        {{q.end_date}}
+                        <a href="{% url 'play' q.id %}">Continue</a>
+                    </div>
+                {% endfor %}
+                 <h3>Current</h3>
+                {% for q in quizzes.current %}
+                    <div>
+                        {{q.name}}
+                        {{q.category}}
+                        {{q.start_date}}
+                        {{q.end_date}}
+                        <a href="{% url 'play' q.id %}">Play</a>
+                    </div>
+                {% endfor %}
+                <h3>Coming soon</h3>
+                {% for q in quizzes.coming_soon %}
+                    <div>
+                        {{q.name}}
+                        {{q.category}}
+                        {{q.start_date}}
+                        {{q.end_date}}
+                    </div>
+                {% endfor %}
+
+            {% else %}
+                <p>There are no quizzes.</p>
+            {% endif %}
+        {% endif %}
+    {% endblock %}
+
+
+
+
+
+
+
+  </main>
+</body>
+</html>

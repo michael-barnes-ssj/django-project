@@ -1,0 +1,38 @@
+{% extends 'index.html' %}
+
+{% block title %}High Scores{% endblock %}
+
+{% block content %}
+    <br>
+    <h2>High Scores</h2>
+    <br>
+    <div class="row tables-row">
+        {% if highscores %}
+            {% for scores in highscores %}
+                {% if scores %}
+                    <div class="col-lg-3 col-md-4 col-sm-6 portfolio-item ">
+                        <div class="card">
+                            <h3 class="highscores"><b>{{scores.Quiz}}</b></h3>
+                            <table class ="highscores">
+                            <tr>
+                                <th>User</th>
+                                <th>Score</th>
+                            </tr>
+                            {% for score in scores.Scores %}
+                                <tr>
+                                    <td>{{score.User}}</td>
+                                    <td>{{score.Score}}</td>
+                                </tr>
+                            {% endfor %}
+                         </table>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+        <h4><i>There are no high scores.</i></h4>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block display_quizzes %}{% endblock %}

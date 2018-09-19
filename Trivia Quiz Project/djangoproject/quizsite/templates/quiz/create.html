@@ -1,0 +1,38 @@
+{% extends 'index.html' %}
+
+{% block title %}Create Quiz{% endblock %}
+
+{% block content %}
+<div class= "createForm ">
+  <br>
+  <h2>Create Tournament</h2>
+  <br>
+
+  <form  action="{% url 'created' %}" method="post">
+    {% csrf_token %}
+    <div class="align">
+      <label class="label" for="name">Tournament Name: </label><input id="name" required type="text" name="tname"><br><br>
+      <label class="label" for="sdate">Start Date: </label><input id="sdate" required type="date" name="sdate"><br><br>
+      <label class="label" for="edate">End date: </label><input id="edate" required type="date" name="edate"><br><br>
+      <label class="label" for="category">Category (Optional):  </label><select id="category" name="category">
+        {% if categories %}
+          {% for c in categories %}
+            <option value={{c.id}}>{{c.title}}</option>
+          {% endfor %}
+        {% endif %}
+      </select><br><br>
+      <label class="label" for="difficulty">Difficulty (Optional):  </label><select id="difficulty" name="difficulty">
+        <option value="&">No Preference</option>
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+      </select>
+      <br><br>
+    </div>
+    <input class="btn" type="submit" value="Create"/>
+  </form>
+</div>
+{% endblock %}
+
+
+{% block display_quizzes %}{% endblock %}

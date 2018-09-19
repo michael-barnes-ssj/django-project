@@ -1,0 +1,21 @@
+{% extends 'index.html' %}
+
+{% block title %}Results{% endblock %}
+
+{% block content %}
+
+    {% if response %}
+    <br>
+    <div class ="response">
+        <i>{{ response }}</i>
+    </div>
+    {% endif %}
+    <br>
+    <br>
+    {% if score %}
+    <h4>Your final score was {{ score }}!</h4>
+    {% endif %}
+
+{% endblock %}
+
+{% block display_quizzes %}{% endblock %}

@@ -1,0 +1,228 @@
+> from django.test import TestCase
+  
+  # Create your tests here.
+> from django.test import TestCase
+> from .models import Question, Quiz, Score, Answer, QuizCategory
+> from django.test.utils import setup_test_environment, teardown_test_environment
+> from django.test import Client
+> from django.urls import reverse
+> from django.contrib.auth.models import User
+> import datetime
+  
+  
+  
+  
+  
+  
+  # Create your tests here.
+  
+> class CreateQuizTest(TestCase):
+  
+>     def setUp(self):
+>         category = QuizCategory.objects.create(title="Test Category", number=1)
+>         quiz = Quiz.objects.create(name="Test Quiz", start_date="2000-10-10",
+>                                    end_date="2000-10-10", category=category, difficulty="&")
+>         Question.objects.create(question="Test Question", quiz=quiz, correct_answer="correct")
+  
+>     def test_quiz(self):
+  
+>         test_quiz = Quiz.objects.get(name="Test Quiz")
+>         self.assertEqual(str(test_quiz), 'Test Quiz')
+>         self.assertEqual(test_quiz.name, 'Test Quiz')
+  
+>     def test_question(self):
+>         test_quiz = Quiz.objects.get(name="Test Quiz")
+>         question = Question.objects.get(quiz=test_quiz)
+>         self.assertEqual(question.question, "Test Question")
+  
+  
+> class UserTest(TestCase):
+  
+>     def setUp(self):
+  
+>         normal_user = User.objects.create(username='testuser')
+>         normal_user.set_password('12345')
+>         normal_user.save()
+  
+>         super_user = User.objects.create_superuser(username='superuser', email="test@email.com", password="12345")
+>         super_user.set_password('12345')
+>         super_user.save()
+  
+>         self.client = Client()
+>         self.logged_in = self.client.login(username='testuser', password='12345')
+>         self.super_logged_in = self.client.login(username='superuser', password='12345')
+  
+>     def test_regular_user(self):
+>         normal_user = User.objects.get(username='testuser')
+>         self.assertFalse(normal_user.is_superuser)
+>         self.assertTrue(self.logged_in)
+  
+>     def test_super_user(self):
+>         super_user = User.objects.get(username='superuser')
+>         self.assertTrue(super_user.is_superuser)
+>         self.assertTrue(self.super_logged_in)
+  
+  
+> class TestPermissions(TestCase):
+  
+>     def setUp(self):
+>         self.client = Client()
+  
+>     def test_redirect(self):
+>         self.client = Client()
+>         response = self.client.get("")
+          # test that redirects if not logged in
+>         self.assertEqual(response.status_code, 302)
+>         self.assertEqual(response.url, '/accounts/login/?home=/')
+  
+>     def test_show_quizzes(self):
+>         normal_user = User.objects.create(username='testuser')
+>         normal_user.set_password('12345')
+>         normal_user.save()
+>         self.client.login(username='testuser', password='12345')
+>         response = self.client.get("")
+          # Test that once logged in, allowed to see page
+>         self.assertEqual(response.status_code, 200)
+  
+> class CreateViewTest(TestCase):
+  
+>     def setUp(self):
+>         self.normal_user = User.objects.create(username='testuser')
+>         self.normal_user.set_password('12345')
+>         self.normal_user.save()
+>         self.client = Client()
+>         self.logged_in = self.client.login(username='testuser', password='12345')
+  
+>     def test_create_permissions_normal_user(self):
+>         response = self.client.get('/create/')
+          # Should redirect if not super user
+>         self.assertEqual(response.status_code, 302)
+          # Redirect to home page
+>         self.assertEqual(response.url, '/')
+  
+>     def test_create_permissions_super_user(self):
+>         super_user = User.objects.create_superuser(username='superuser', email="test@email.com", password="12345")
+>         super_user.set_password('12345')
+>         super_user.save()
+>         self.client = Client()
+>         self.logged_in = self.client.login(username='superuser', password='12345')
+>         response = self.client.get('/create/')
+          # If super is logged in it should show page
+>         self.assertEqual(response.status_code, 200)
+  
+> class CreatedQuizViewTest(TestCase):
+  
+>     def setUp(self):
+  
+>         super_user = User.objects.create_superuser(username='superuser', email="test@email.com", password="12345")
+>         super_user.set_password('12345')
+>         super_user.save()
+>         self.client = Client()
+>         self.super_logged_in = self.client.login(username='superuser', password='12345')
+>         QuizCategory.objects.create(title="Test Category", number=9)
+  
+>     def test_create_current(self):
+>         current_date = datetime.date.today()
+>         response = self.client.post('/created/',
+>                                {'difficulty': '&', 'category': 1, 'tname': 'Test Quiz', 'sdate': current_date,
+>                                 'edate': current_date})
+>         questions = Question.objects.all()
+          # 10 questions should be created
+>         self.assertEqual(len(questions), 10)
+          # Context should have name of tourny
+>         self.assertEqual(response.context['tourny_name'], 'Test Quiz')
+          # Current quiz should have quiz
+>         self.assertQuerysetEqual(response.context['quizzes']['current'], ['<Quiz: Test Quiz>'])
+  
+>     def test_create_coming_soon(self):
+>         week_away = datetime.date.today() + datetime.timedelta(days=7)
+>         response = self.client.post('/created/',
+>                                     {'difficulty': '&', 'category': 1, 'tname': 'Test Quiz', 'sdate': week_away,
+>                                      'edate': week_away})
+>         self.assertEqual(response.context['tourny_name'], 'Test Quiz')
+          # Coming soon quizzes should have quiz
+>         self.assertQuerysetEqual(response.context['quizzes']['coming_soon'], ['<Quiz: Test Quiz>'])
+  
+  
+>     def test_missed_quiz(self):
+>         week_ago = datetime.date.today() + datetime.timedelta(days=-7)
+>         response = self.client.post('/created/',
+>                                     {'difficulty': '&', 'category': 1, 'tname': 'Test Quiz', 'sdate': week_ago,
+>                                      'edate': week_ago})
+>         self.assertEqual(response.context['tourny_name'], 'Test Quiz')
+          # Quiz should not show because it is over
+>         self.assertQuerysetEqual(response.context['quizzes']['current'], [])
+  
+  
+> class TakeQuizViewTest(TestCase):
+  
+>     def setUp(self):
+>         category = QuizCategory.objects.create(title="Test Category", number=1)
+>         self.quiz = Quiz.objects.create(name="Test Quiz", start_date="2000-10-10",
+>                                    end_date="2000-10-10", category=category, difficulty="&")
+>         self.question = Question.objects.create(question="Test Question", quiz=self.quiz, correct_answer="correct")
+>         Answer.objects.create(question=self.question, answer="Test Answer")
+>         self.question2 = Question.objects.create(question="Test Question2", quiz=self.quiz, correct_answer="correct")
+>         Answer.objects.create(question=self.question2, answer="Test Answer2")
+>         self.normal_user = User.objects.create(username='testuser')
+>         self.normal_user.set_password('12345')
+>         self.normal_user.save()
+>         self.client = Client()
+>         self.logged_in = self.client.login(username='testuser', password='12345')
+  
+  
+>     def test_load_quiz(self):
+>         response = self.client.get('/' + str(self.quiz.id))
+>         self.assertEqual(response.context['quiz'].name, 'Test Quiz')
+>         self.assertEqual(response.context['question'].question, 'Test Question')
+>         self.assertEqual(response.context['answers'][0].answer, 'Test Answer')
+  
+>     def test_answer_question(self):
+>         Score.objects.create(quiz=self.quiz, question=self.question, user=self.normal_user, answered=False, correct=0)
+>         post_response = self.client.post('/' + str(self.quiz.id), {'answer': 'correct', 'last_question': 1})
+>         get_response = self.client.get('/' + str(self.quiz.id))
+  
+>         updated_score = Score.objects.get(question=self.question)
+          # Check that post redirects to get
+>         self.assertEqual(post_response.status_code, 302)
+          # Check that score has been updated
+>         self.assertEqual(updated_score.correct, 1)
+>         self.assertEqual(updated_score.answered, True)
+          # Check that next question displays
+>         self.assertEqual(get_response.context['question'].question, 'Test Question2')
+  
+  
+> class ShowIncompleteQuizTest(TakeQuizViewTest):
+  
+>     def test_incomplete(self):
+>         self.test_answer_question()
+>         response = self.client.get("")
+>         self.assertQuerysetEqual(response.context['quizzes']['incomplete'], ['<Quiz: Test Quiz>'])
+  
+  
+> class HighScoresTest(TakeQuizViewTest):
+  
+>     def test_high_scores(self):
+>         Score.objects.create(quiz=self.quiz, question=self.question, user=self.normal_user, answered=False, correct=1)
+>         Score.objects.create(quiz=self.quiz, question=self.question2, user=self.normal_user, answered=False, correct=0)
+>         response = self.client.get("/highscores/")
+>         self.assertEqual(response.context["highscores"][0]["Scores"][0]["Score"], '1/2')
+  
+>     def test_high_scores_2_users(self):
+>         self.test_high_scores()
+>         normal_user2 = User.objects.create(username='testuser2')
+>         normal_user2.set_password('12345')
+>         normal_user2.save()
+>         self.client.login(username='testuser2', password='12345')
+>         Score.objects.create(quiz=self.quiz, question=self.question, user=normal_user2, answered=False, correct=1)
+>         Score.objects.create(quiz=self.quiz, question=self.question2, user=normal_user2, answered=False, correct=1)
+>         response = self.client.get("/highscores/")
+>         self.assertEqual(str(response.context["highscores"][0]["Scores"]), "[{'User': <User: testuser>, 'Score': '1/2'}, {'User': <User: testuser2>, 'Score': '2/2'}]")
+  
+  
+  
+  
+  
+  
+  
+  

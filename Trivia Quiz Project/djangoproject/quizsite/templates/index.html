@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+    <title>{% block title %}Home{% endblock %}</title>
+    {% load static %}
+    <!-- Bootstrap core CSS -->
+    <link href= "{% static 'bootstrap/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css">
+    {% load static %}
+    <link href= "{% static 'bootstrap/css/4-col-portfolio.css' %}" rel="stylesheet" type="text/css">
+
+  </head>
+
+  <body>
+
+    {% block nav %}
+
+          <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+            <div class="container">
+              <a class="navbar-brand" href="#">Trivia Quiz</a>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+              <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ml-auto">
+                {% if user.is_authenticated %}
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'home' %}">Home</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'highscores' %}">High scores</a>
+                  </li>
+                  {%if user.is_superuser %}
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'create' %}">Create tournament</a>
+                  </li>
+                  <li class="nav-item">
+                     <a class="nav-link" href="{% url 'update' %}">Update Categories</a>
+                  </li>
+                  <li class="nav-item">
+                      <p class="navbar-brand user">Admin user: {{ user.username }}</p>
+                  </li>
+                  {% else %}
+                    <li class="nav-item"><p class="navbar-brand user">User: {{ user.username }}</p></li>
+                  {% endif %}
+              {% else %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'signup' %}">Sign up</a></li>
+              {% endif %}
+                </ul>
+              </div>
+            </div>
+          </nav>
+    {% endblock %}
+
+    <!-- Page Content -->
+    <div class="container">
+
+    {% block content %}
+    {% endblock %}
+
+    {% block display_quizzes %}
+        {% if user.is_authenticated %}
+            {% if quizzes %}
+                {% if quizzes.incomplete %}
+                    <h1 class="my-4">
+                      <h4>Incomplete Quizzes</h4>
+                        <br>
+                    </h1>
+                    <div class="row">
+                    {% for q in quizzes.incomplete %}
+
+                        <div class="col-lg-3 col-md-4 col-sm-6 portfolio-item">
+                          <div class="card h-100">
+                              {% load static %}
+                            <a href="{% url 'play' q.id %}"><img class="card-img-top" src="{% static 'images/banner.png' %}" alt=""></a>
+                            <div class="card-body">
+                              <h4 class="card-title">
+                                <a href="{% url 'play' q.id %}">{{q.name}}</a>
+                              </h4>
+                              <p class="card-text">
+                                  <b>Category: </b>{{q.category}}
+                              </p>
+                                <p class="card-text">
+                                  <b>Difficulty: </b>{{q.get_difficulty_display}}
+                              </p>
+                                <p class="card-text">
+                                <b>Start Date: </b>{{q.start_date}}
+                              </p>
+                                <p class="card-text">
+                                <b>End Date: </b>{{q.end_date}}
+                              </p>
+
+                            </div>
+                          </div>
+                        </div>
+                    {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% if quizzes.current %}
+
+                    <h1 class="my-4">
+                      <h4>Current Quizzes</h4>
+                        <br>
+                    </h1>
+                    <div class="row">
+                    {% for q in quizzes.current %}
+
+                        <div class="col-lg-3 col-md-4 col-sm-6 portfolio-item">
+                          <div class="card h-100">
+                              {% load static %}
+                            <a href="{% url 'play' q.id %}"><img class="card-img-top" src="{% static 'images/banner.png' %}" alt=""></a>
+                            <div class="card-body">
+                              <h4 class="card-title">
+                                <a href="{% url 'play' q.id %}">{{q.name}}</a>
+                              </h4>
+                              <p class="card-text">
+                                  <b>Category: </b>{{q.category}}
+                              </p>
+                                <p class="card-text">
+                                  <b>Difficulty: </b>{{q.get_difficulty_display}}
+                              </p>
+                                <p class="card-text">
+                                <b>Start Date: </b>{{q.start_date}}
+                              </p>
+                                <p class="card-text">
+                                <b>End Date: </b>{{q.end_date}}
+                              </p>
+
+                            </div>
+                          </div>
+                        </div>
+                    {% endfor %}
+                    </div>
+                {% else %}
+                    <br>
+                    There are no current quizzes.
+                {% endif %}
+
+                {% if quizzes.coming_soon %}
+
+                    <h1 class="my-4">
+                      <h4>Coming Soon</h4>
+                        <br>
+                    </h1>
+
+                    <div class="row">
+                    {% for q in quizzes.coming_soon %}
+
+                        <div class="col-lg-3 col-md-4 col-sm-6 portfolio-item">
+                          <div class="card h-100">
+                              {% load static %}
+                            <img class="card-img-top" src="{% static 'images/banner.png' %}" alt="">
+                            <div class="card-body">
+                              <h4 class="card-title">{{q.name}}
+                              </h4>
+                              <p class="card-text">
+                                  <b>Category: </b>{{q.category}}
+                              </p>
+                                <p class="card-text">
+                                  <b>Difficulty: </b>{{q.get_difficulty_display}}
+                              </p>
+                                <p class="card-text">
+                                <b>Start Date: </b>{{q.start_date}}
+                              </p>
+                                <p class="card-text">
+                                <b>End Date: </b>{{q.end_date}}
+                              </p>
+
+                            </div>
+                          </div>
+                        </div>
+                    {% endfor %}
+                    </div>
+                {% endif %}
+            {% endif %}
+        {% endif %}
+    {% endblock %}
+    </div>
+
+    {% load static %}
+    <script src= "{% static 'bootstrap/vendor/jquery/jquery.min.js' %}" rel="stylesheet"></script>
+    {% load static %}
+    <script src= "{% static 'bootstrap/vendor/bootstrap/js/bootstrap.bundle.min.js' %}" rel="stylesheet"></script>
+
+  </body>
+</html>

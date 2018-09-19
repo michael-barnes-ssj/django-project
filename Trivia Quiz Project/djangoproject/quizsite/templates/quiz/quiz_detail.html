@@ -1,0 +1,32 @@
+<!-- templates/quiz_list.html-->
+{% extends 'index.html' %}
+
+{% block title %}Play{% endblock %}
+
+{% block display_quizzes %}
+    {% if quiz %}
+        <h1>{{quiz.name}}</h1>
+        <br>
+    {% endif %}
+    {% if response %}
+        <div class ="response">
+            <i>{{ response }}</i>
+        </div>
+    {% endif %}
+    <br>
+    <form action="{% url 'play' quiz.id %}" method="post">
+        <h4>Question {{ number }}</h4>
+        <br>
+        {% csrf_token %}
+        {{question.question}}
+        <br><br><br>
+        {% for a in answers %}
+            <input type="radio" name="answer" required value="{{ a.answer }}"> {{a.answer}}<br>
+        {% endfor %}
+        <br>
+
+        <input type="hidden" name="last_question" value={{question.id}}>
+        <input class="btn" type="submit" value="Submit">
+    </form>
+{% endblock %}
+

@@ -1,0 +1,15 @@
+{% extends 'index.html' %}
+
+{% block title %}High Scores{% endblock %}
+
+{% block content %}
+    <br>
+    {% if count %}
+        Number of categories updated: {{ count }}
+    {% else %}
+        Categories are up to date.
+    {% endif %}
+
+{% endblock %}
+
+{% block display_quizzes %}{% endblock %}

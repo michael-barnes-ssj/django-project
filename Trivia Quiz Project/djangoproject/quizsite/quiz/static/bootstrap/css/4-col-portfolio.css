@@ -1,0 +1,116 @@
+/*!
+ * Start Bootstrap - 4 Col Portfolio (https://startbootstrap.com/template-overviews/4-col-portfolio)
+ * Copyright 2013-2018 Start Bootstrap
+ * Licensed under MIT (https://github.com/BlackrockDigital/startbootstrap-4-col-portfolio/blob/master/LICENSE)
+ */
+
+body {
+  padding-top: 54px;
+  background: #8c959180;
+}
+
+@media (min-width: 992px) {
+  body {
+    padding-top: 56px;
+  }
+}
+body {
+  margin: 3em;
+}
+
+* {
+  padding: 0;
+  margin: 0;
+}
+
+table {
+    border-collapse: collapse;
+    margin-bottom: 10%;
+}
+
+table, th, td {
+    border: 1px solid black;
+}
+
+th, td {
+    padding: 15px;
+    text-align: left;
+    width: 60%;
+}
+
+th{
+  background: #343a40;
+  color: white;
+}
+
+
+.label{
+  width: 16%;
+}
+
+tr:nth-child(even){background-color: #abb0ae4d;}
+
+.row
+{
+	overflow-x: auto;
+	flex-wrap: nowrap;
+}
+
+h3.highscores
+{
+  margin-top: 15px
+}
+.highscores
+{
+  margin: auto;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+
+
+
+.response
+{
+  color: white;
+  background-color: #343a40;
+  display: inline-block;
+  padding: 1%;
+  margin-bottom: 2%;
+  border-radius: 9px;
+
+}
+
+.tables-row
+{
+	flex-wrap: wrap;
+}
+
+.portfolio-item
+{	
+	margin-bottom: 2%;
+}
+.user
+{
+    margin-left: 20%;
+
+
+}
+
+.btn {
+    margin-top: 4%;
+  -webkit-border-radius: 9;
+  -moz-border-radius: 9;
+  border-radius: 9px;
+  font-family: Arial;
+  color: #f2eaf2;
+  font-size: 20px;
+  background: #343a40;
+  padding: 10px 20px 10px 20px;
+  text-decoration: none;
+}
+
+.btn:hover {
+  background: #484b4d;
+  text-decoration: none;
+}
